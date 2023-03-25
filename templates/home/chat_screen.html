@@ -1,99 +1,72 @@
-{% extends 'base.html' %} {% block content %}
-<section style="background-color: #cdc4f9">
-  <div class="container py-3">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card" id="chat3" style="border-radius: 15px">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
-                <div class="p-3">
-                  <div
-                    data-mdb-perfect-scrollbar="true"
-                    style="position: relative; height: 400px"
-                  >
-                    <ul class="list-unstyled mb-0">
-                      {% for user in users %}
-                      <li class="p-2 border-bottom">
-                        <a
-                          href="/chat/{{user.username}}"
-                          class="d-flex justify-content-between"
-                          style="text-decoration: none"
-                        >
-                          <div class="d-flex flex-row">
-                            <div>
-                              <img
-                                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                                alt="avatar"
-                                class="d-flex align-self-center me-3"
-                                width="60"
-                              />
-                              <span class="badge bg-success badge-dot"></span>
-                            </div>
-                            <div class="pt-1">
-                              <p class="fw-bold mb-0">{{user.username}}</p>
-                            </div>
-                          </div>
-                        </a>
-                      </li>
-                      {% endfor %}
-                    </ul>
-                  </div>
-                </div>
-              </div>
+{% extends 'base.html' %} {% block content %} {% load static %}
 
-              <div class="col-md-6 col-lg-7 col-xl-8">
-                <div
-                  class="pt-3 pe-3"
-                  data-mdb-perfect-scrollbar="true"
-                  style="position: relative; height: 400px"
-                  id="messages"
-                >
-                  <h4>{{ user }}</h4>
-                  <hr />
-                  <div class="d-flex flex-row justify-content-end" id="rcvMsg">
-                    <div>
-                      <p
-                        class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
-                        >Excepteur sint occaecat cupidatat non proident, sunt in
-                        culpa qui officia deserunt mollit anim id est
-                        laborum.</p
-                      >
-                    </div>
-                  </div>
-
-                  <div class="d-flex flex-row justify-content-start" id="myMsg">
-                    <div>
-                      <p
-                        class="small p-2 ms-3 mb-1 rounded-3"
-                        style="background-color: #f5f6f7"
-                        >Sed ut perspiciatis unde omnis iste natus error sit
-                      </p></div
-                    >
-                  </div>
-                </div>
-                <div
-                  class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"
-                >
-                  <form>
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      id="exampleFormControlInput2"
-                      placeholder="Type message"
-                    />
-                    <button type="button" id="msgSend">send</button>
-                  </form>
-                </div>
-              </div>
+<div class="container">
+  <h3 class="text-center">Messaging</h3>
+  <div class="messaging">
+    <div class="inbox_msg">
+      <div class="inbox_people">
+        <div class="headind_srch">
+          <div class="recent_heading">
+            <h4>Recent</h4>
+          </div>
+          <div class="srch_bar">
+            <div class="stylish-input-group">
+              <input type="text" class="search-bar" placeholder="Search" />
+              <span class="input-group-addon">
+                <button type="button">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+              </span>
             </div>
           </div>
         </div>
+        <div class="inbox_chat">
+          {% if users %} {% for user1 in users %}
+          <a href="/chat/{{user1.username}}">
+            <div
+              class="chat_list {% if user1.username == user %} active_chat {% endif %}"
+            >
+              <div class="chat_people">
+                <div class="chat_img">
+                  <img
+                    src="{% static '/assets/user-profile.png' %}"
+                    alt="imgprofile"
+                  />
+                </div>
+                <div class="chat_ib">
+                  <h5>{{user1.username}} </h5>
+                </div>
+              </div>
+            </div>
+          </a>
+          {% endfor %} {% endif %}
+        </div>
       </div>
-    </div>
-  </div>
-</section>
-
+      <div class="mesgs">
+        <div class="msg_history" id="messages">
+          <div class="outgoing_msg">
+            <div class="sent_msg">
+              <p>Apollo University, Delhi, India Test</p>
+            </div>
+          </div>
+          <div class="incoming_msg" id="incoming_msg"> </div>
+        </div>
+        <div class="type_msg">
+          <div class="input_msg_write">
+            <input
+              type="text"
+              id="input_msg"
+              class="write_msg"
+              placeholder="Type a message"
+            />
+            <button class="msg_send_btn" id="send_msg" type="button"
+              ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
+            ></button>
+          </div>
+        </div>
+      </div>
+    </div> </div
+></div>
 <script>
   var roomName = "{{ user }}";
   const chatSocket = new WebSocket(
@@ -103,18 +76,18 @@
 
   chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    const messages = document.getElementById("messages");
-    const rcvMsgDiv = document.createElement("div");
-    rcvMsgDiv.className = "d-flex flex-row justify-content-end";
-    const msgDiv = document.createElement("div");
-    const msgP = document.createElement("p");
-    msgP.className = "small p-2 me-3 mb-1 text-white rounded-3 bg-primary";
-    // msgP.style = "background-color: #f5f6f7";
-    const msgTxt = document.createTextNode(data.message.content);
-    msgP.appendChild(msgTxt);
-    msgDiv.appendChild(msgP);
-    rcvMsgDiv.appendChild(msgDiv);
-    messages.appendChild(rcvMsgDiv);
+    const incoming_messages = document.getElementById("incoming_msg");
+    const rec_msg_div = document.createElement("div");
+    rec_msg_div.className = "received_msg";
+    rec_msg_div.style = "margin-bottom: 15px";
+    const rcv_witd_msg_div = document.createElement("div");
+    rcv_witd_msg_div.className = "received_withd_msg";
+    const msg_p = document.createElement("p");
+    const msg_txt = document.createTextNode(data.message.content);
+    msg_p.appendChild(msg_txt);
+    rcv_witd_msg_div.appendChild(msg_p);
+    rec_msg_div.appendChild(rcv_witd_msg_div);
+    messages.appendChild(rec_msg_div);
     console.log(data);
   };
 
@@ -122,8 +95,8 @@
     console.error("Chat socket closed unexpectedly");
   };
 
-  document.getElementById("msgSend").onclick = function (e) {
-    const msgInputDom = document.getElementById("exampleFormControlInput2");
+  document.getElementById("send_msg").onclick = function (e) {
+    const msgInputDom = document.getElementById("input_msg");
     const msg = msgInputDom.value;
     console.log(msg, ">>MSG");
     chatSocket.send(
@@ -136,4 +109,4 @@
     msgInputDom.value = "";
   };
 </script>
-{% endblock %}
+{% endblock content %}
